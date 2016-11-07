@@ -32,10 +32,9 @@ void draw() {
   fft.analyze(_spectrum);
   capture.capture(_spectrum);
   spectrum = capture.getAverage();
+  peak = capture.getPeak(spectrum);
   for(int i = 0; i < max; i++){
-  // The result of the FFT is normalized
-  // draw the line for frequency band i scaling it up by 5 to get more amplitude.
-    float[] shown = (spectrumFreeze == null)?spectrum:spectrumFreeze;
+    float[] shown = spectrum;//(spectrumFreeze == null)?spectrum:spectrumFreeze;
     if(peak.length >= i && i >0){
       switch(peak[i-1]){
         case 1:
