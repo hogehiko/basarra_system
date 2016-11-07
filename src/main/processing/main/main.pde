@@ -8,7 +8,7 @@ int max = 128;
 float[] spectrum = new float[bands];
 int[] peak = new int[0];
 float[] spectrumFreeze = null;
-Capture capture = new Capture();
+Capture capture = new Capture(bands, 10);
 
 void setup() {
   
@@ -28,8 +28,10 @@ void setup() {
 
 void draw() { 
   background(255);
-  fft.analyze(spectrum);
-
+  float[] _spectrum = new float[bands];
+  fft.analyze(_spectrum);
+  capture.capture(_spectrum);
+  spectrum = capture.getAverage();
   for(int i = 0; i < max; i++){
   // The result of the FFT is normalized
   // draw the line for frequency band i scaling it up by 5 to get more amplitude.

@@ -1,14 +1,21 @@
 package hogehiko.basara
 
 import scala.annotation.tailrec
+import scala.collection.mutable
+
+
 
 /**
   * Created by takehiko on 2016/11/06.
   */
-class Capture {
+class Capture(band:Int, bufferSize:Long) {
+  val buf = new SpectrumBuffer(band, bufferSize)
   def capture(sample:Array[Float]) :Unit = {
-    println(distances(sample.toList)(10))
+    buf.add(sample)
+
   }
+
+  def getAverage = buf.getAverageOfBuffer
 
   def getPeak(sample:Array[Float]):Array[Int] = highlowFromSample(sample.toList).toArray
 
