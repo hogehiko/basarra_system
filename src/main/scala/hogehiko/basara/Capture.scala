@@ -1,18 +1,28 @@
 package hogehiko.basara
 
+import java.io.File
+
 import scala.annotation.tailrec
 import scala.collection.mutable
-
+import com.github.tototoshi.csv._
 
 
 /**
   * Created by takehiko on 2016/11/06.
   */
-class Capture(band:Int, bufferSize:Long) {
+class Capture(band:Int, bufferSize:Long, captureLogFileName:String) {
   val buf = new SpectrumBuffer(band, bufferSize)
+
+  val captureLog = new File(captureLogFileName)
+  println(captureLog.getAbsolutePath)
+  val csvWriter = CSVWriter.open(captureLog)
   def capture(sample:Array[Float]) :Unit = {
     buf.add(sample)
+  }
 
+  def log(note:String, sample:Array[Float]) = {
+    csvWriter.writeRow(note::sample.toList)
+    csvWriter.flush()
   }
 
   def getAverage = buf.getAverageOfBuffer

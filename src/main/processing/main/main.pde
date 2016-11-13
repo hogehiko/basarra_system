@@ -1,6 +1,8 @@
 import processing.sound.*;
 import hogehiko.basara.*;
 import java.util.*;
+import controlP5.*;
+
 FFT fft;
 AudioIn in;
 int bands = 512;
@@ -8,23 +10,43 @@ int max = 128;
 float[] spectrum = new float[bands];
 int[] peak = new int[0];
 float[] spectrumFreeze = null;
-Capture capture = new Capture(bands, 10);
+Capture capture = new Capture(bands, 10, "sample.log");
+ControlP5 p5;
 
 void setup() {
-  
   size(512, 360);
   background(255);
-    
+  p5 = new ControlP5(this);
+  PFont font = createFont("arial", 20);
   // Create an Input stream which is routed into the Amplitude analyzer
   fft = new FFT(this, bands);
   in = new AudioIn(this, 0);
-  
+  // gui
+    p5.addTextfield("note")
+    .setPosition(20, 20)
+      .setSize(200, 40)
+        .setFont(font)
+          .setFocus(true)
+            .setColor(color(255, 0, 0))
+              ;
+              
+  // and add another 2 buttons
+  p5.addButton("capture")
+     //.setValue(100)
+     .setPosition(230,20)
+     .setSize(70,40)
+     ;
   // start the Audio Input
   in.start();
   
   // patch the AudioIn
   fft.input(in);
 }      
+
+void capture(){
+  capture.log(p5.get(Textfield.class, "note").getText(), spectrum); 
+  System.out.println(p5.get(Textfield.class, "note").getText());
+}  
 
 void draw() { 
   background(255);
@@ -60,14 +82,14 @@ void draw() {
 }
 
 void mouseClicked() {
-  if(spectrumFreeze == null){
-    spectrumFreeze = Arrays.copyOf(spectrum, spectrum.length);   
-    peak = capture.getPeak(spectrumFreeze);
-    System.out.println("freeze");
+  //if(spectrumFreeze == null){
+  //  spectrumFreeze = Arrays.copyOf(spectrum, spectrum.length);   
+  //  peak = capture.getPeak(spectrumFreeze);
+  //  System.out.println("freeze");
     
-  }else{
-    spectrumFreeze = null;
-    peak = new int[0];
-    System.out.println("play");
-  }
+  //}else{
+  //  spectrumFreeze = null;
+  //  peak = new int[0];
+  //  System.out.println("play");
+  //}
 }
