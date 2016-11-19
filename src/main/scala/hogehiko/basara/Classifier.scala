@@ -2,10 +2,6 @@ package hogehiko.basara
 
 import scala.collection.mutable
 
-/**
-  * Created by takehiko on 2016/11/13.
-  * すべて2クラス分類にしてみる？
-  */
 class Classifier[T](sample:Seq[(T, Vector[Int])], classes:List[T]) {
   val variables:List[Variable] = List.fill(sample(0)._2.size){new Variable}
 
@@ -44,13 +40,13 @@ class Classifier[T](sample:Seq[(T, Vector[Int])], classes:List[T]) {
       if(counter.contains(c,l)){
         counter(c,l) += 1
       }else{
-        counter += (c,l) -> 1
+        counter += (c,l) -> 2
       }
     }
 
-    def p(c:Clazz, l:Label):Double = 0.0001 + (count(c, l):Double) / count(c)
+    def p(c:Clazz, l:Label):Double = (count(c, l):Double) / count(c)
 
-    def count(c:Clazz, l:Label) = counter.get(c,l).getOrElse(0)
+    def count(c:Clazz, l:Label) = counter.get(c,l).getOrElse(1)
 
     def count(c:Clazz) = (0 /: (for(((_c, l), v)<-counter if(c==_c))yield v))(_ + _)
   }
@@ -58,13 +54,9 @@ class Classifier[T](sample:Seq[(T, Vector[Int])], classes:List[T]) {
   def likelihood(c:T, sample:Vector[Int]) = (Math.log(p(c)) /: (for((l,v)<-(sample zip variables))yield Math.log(v.p(c,l)))){_+_}
 
   def calc(sample:Vector[Int]) = {
-//    val ok = likelihood(true, sample);
-//    val ng = likelihood(false, sample);
     val likelihoods = for(c<-classes)yield (c, likelihood(c, sample))
     likelihoods.maxBy(_._2)._1
   }
-
-  //def posterior(clazz:Boolean, l:Label) = count(clazz, l) / numRecords
 
   def count(clazz:Clazz,  l:Label):Int =variables.map(_.count(clazz, l)).sum
 

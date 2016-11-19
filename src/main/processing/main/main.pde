@@ -95,13 +95,13 @@ void draw() {
      //System.out.print(s);
      //ty += 50;
      if(result.equals("E")){
-       curY += 1;
+       curY += 2;
      }else if(result.equals("G")){
-        curX += 1; 
+        curX += 2; 
      }else if(result.equals("A")){
-         curX -= 1;
+         curX -= 2;
      }else if(result.equals("C")){
-         curY -= 1;
+         curY -= 2;
      }
      robot.mouseMove(curX, curY);
      if(result.equals("D")){

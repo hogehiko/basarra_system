@@ -1,20 +1,11 @@
 package hogehiko.basara
 
 import java.io.File
-
-import scala.annotation.tailrec
-import scala.collection.mutable
 import com.github.tototoshi.csv._
 
-
-/**
-  * Created by takehiko on 2016/11/06.
-  */
 class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogFileName:String) {
   val highlowFromSample = (highlow _) compose (distances _)
-
   val buf = new SpectrumBuffer(band, bufferSize)
-
   val captureLog = new File(captureLogFileName)
 
   def makeClassifier() = {
@@ -40,7 +31,6 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
   }
 
   val notes = List("A", "C", "D", "E", "G")
-  //val classifiers:List[(String, Classifier[String])] = for(n<-notes) yield (n, makeClassifier(n))
   val classifier = makeClassifier()
   def calc(band:Array[Float]) = {
     val peaks = getPeak(band).toVector
@@ -53,7 +43,6 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
   }
 
   def getAverage = buf.getAverageOfBuffer
-
   def getPeak(sample:Array[Float]):Array[Int] = highlowFromSample(sample.toList).toArray
 }
 
