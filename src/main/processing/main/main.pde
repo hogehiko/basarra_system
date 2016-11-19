@@ -10,7 +10,7 @@ int max = 128;
 float[] spectrum = new float[bands];
 int[] peak = new int[0];
 float[] spectrumFreeze = null;
-Capture capture = new Capture(bands, 10, "sample.log");
+Capture capture = new Capture(bands, 10, "sample.log", "ibanez.log");
 ControlP5 p5;
 
 void setup() {
@@ -49,11 +49,27 @@ void capture(){
 }  
 
 void draw() { 
-  background(255);
+  
   float[] _spectrum = new float[bands];
   fft.analyze(_spectrum);
   capture.capture(_spectrum);
+  
   spectrum = capture.getAverage();
+  String[] result = capture.calc(spectrum);
+  
+  //if(result){
+    background(255);
+   
+  //}else{
+  //  background(128); 
+  //}
+  int ty= 30;
+  for(String s:result){
+     text(s, 400, ty);
+     System.out.print(s);
+     ty += 50;
+  }
+  System.out.println();
   peak = capture.getPeak(spectrum);
   for(int i = 0; i < max; i++){
     float[] shown = spectrum;//(spectrumFreeze == null)?spectrum:spectrumFreeze;
