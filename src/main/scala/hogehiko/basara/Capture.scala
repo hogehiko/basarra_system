@@ -30,7 +30,7 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
               .toVector)
       }
     }
-    val m = new Classifier(samples)
+    val m = Classifier.make(samples, List(true, false))
     println("Classifire created. ok size="+m.count(false))
     m
   }
@@ -41,7 +41,7 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
   }
 
   val notes = List("A", "C", "D", "E", "G")
-  val classifiers:List[(String, Classifier)] = for(n<-notes) yield (n, makeClassifier(n))
+  val classifiers:List[(String, Classifier[Boolean])] = for(n<-notes) yield (n, makeClassifier(n))
 
   def calc(band:Array[Float]) = {
     val peaks = getPeak(band).toVector
