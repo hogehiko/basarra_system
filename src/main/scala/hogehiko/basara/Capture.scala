@@ -10,15 +10,43 @@ import com.github.tototoshi.csv._
 /**
   * Created by takehiko on 2016/11/06.
   */
-class Capture(band:Int, bufferSize:Long, captureLogFileName:String) {
+class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogFileName:String) {
+  val highlowFromSample = (highlow _) compose (distances _)
+
   val buf = new SpectrumBuffer(band, bufferSize)
 
   val captureLog = new File(captureLogFileName)
-  println(captureLog.getAbsolutePath)
+
+  def makeClassifier(targetNote:String) = {
+    val csvReader = CSVReader.open(learningLogFileName)
+    val samples = for(row <- csvReader.toStream) yield {
+      row match{
+        case note :: bands =>
+          val innote = note.contains(targetNote)
+          val v = bands.map(_.toFloat)
+          (innote,
+            highlowFromSample
+            (v)
+              .toVector)
+      }
+    }
+    val m = new Classifier(samples)
+    println("Classifire created. ok size="+m.count(false))
+    m
+  }
+
   val csvWriter = CSVWriter.open(captureLog)
   def capture(sample:Array[Float]) :Unit = {
     buf.add(sample)
   }
+
+  val notes = List("A", "C", "D", "E", "G")
+  val classifiers:List[(String, Classifier)] = for(n<-notes) yield (n, makeClassifier(n))
+
+  def calc(band:Array[Float]) = {
+    val peaks = getPeak(band).toVector
+    for((note, c)<-classifiers if (c.calc(peaks))) yield note
+  }.toArray
 
   def log(note:String, sample:Array[Float]) = {
     csvWriter.writeRow(note::sample.toList)
@@ -28,45 +56,9 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String) {
   def getAverage = buf.getAverageOfBuffer
 
   def getPeak(sample:Array[Float]):Array[Int] = highlowFromSample(sample.toList).toArray
+}
 
-  val highlowFromSample = (highlow _) compose (distances _)
+object Capture extends App{
+  val capture = new Capture(512, 100, "sample.log", "src/main/processing/main/ibanez.log")
 
-  def distances(sample:List[Float]):List[Float] = {
-    @tailrec
-    def _distance(sample:List[Float], conv:List[Float]):List[Float] = {
-      sample match {
-        case first :: second :: tail =>_distance(second :: tail,  (second / first) :: conv)
-        case first :: Nil => conv
-        case Nil => conv
-      }
-    }
-    _distance(sample, List()).reverse
-  }
-  val UP = 1;
-  val UPPER_PEAK = 2;
-  val DOWN = 3;
-  val DOWNER_PEAK = 4;
-
-  def highlow(sample:List[Float]):List[Int] = {
-    val INCREASE = 1;
-    val DECREASE = -1;
-    val updown = sample.map(x=>if(x>1)INCREASE else DECREASE)
-
-    def state(current:Int, next:Int) = (current, next) match{
-      case (`INCREASE`, `INCREASE`) => UP
-      case (`INCREASE`, `DECREASE`) => UPPER_PEAK
-      case (`DECREASE`, `DECREASE`) => DOWN
-      case (`DECREASE`, `INCREASE`) => DOWNER_PEAK
-    }
-    @tailrec
-    def _highlow(sample:List[Int],result:List[Int]):List[Int]={
-      sample match{
-        case current :: next :: tail => _highlow(next :: tail, state(current, next) :: result)
-        case current :: Nil if (current==INCREASE) => UP :: result
-        case current :: Nil if (current==DECREASE) => DOWN :: result
-        case Nil => result
-      }
-    }
-    _highlow(updown, List()).reverse
-  }
 }
