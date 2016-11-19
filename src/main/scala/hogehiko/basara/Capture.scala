@@ -17,12 +17,12 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
 
   val captureLog = new File(captureLogFileName)
 
-  def makeClassifier(targetNote:String) = {
+  def makeClassifier() = {
     val csvReader = CSVReader.open(learningLogFileName)
     val samples = for(row <- csvReader.toStream) yield {
       row match{
         case note :: bands =>
-          val innote = note.contains(targetNote)
+          val innote = note.substring(0,1)
           val v = bands.map(_.toFloat)
           (innote,
             highlowFromSample
@@ -30,8 +30,7 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
               .toVector)
       }
     }
-    val m = Classifier.make(samples, List(true, false))
-    println("Classifire created. ok size="+m.count(false))
+    val m = Classifier.make(samples, notes)
     m
   }
 
@@ -41,12 +40,12 @@ class Capture(band:Int, bufferSize:Long, captureLogFileName:String, learningLogF
   }
 
   val notes = List("A", "C", "D", "E", "G")
-  val classifiers:List[(String, Classifier[Boolean])] = for(n<-notes) yield (n, makeClassifier(n))
-
+  //val classifiers:List[(String, Classifier[String])] = for(n<-notes) yield (n, makeClassifier(n))
+  val classifier = makeClassifier()
   def calc(band:Array[Float]) = {
     val peaks = getPeak(band).toVector
-    for((note, c)<-classifiers if (c.calc(peaks))) yield note
-  }.toArray
+    classifier.calc(peaks)
+  }
 
   def log(note:String, sample:Array[Float]) = {
     csvWriter.writeRow(note::sample.toList)
