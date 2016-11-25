@@ -8,18 +8,18 @@ import java.awt.event.*;
 
 FFT fft;
 AudioIn in,in2;
+int samplingBand = 2048;
 int bands = 512;
 int max = 128;
-float[] spectrum = new float[bands];
+float[] spectrum = new float[samplingBand];
 int[] peak = new int[0];
 float[] spectrumFreeze = null;
-Capture capture = new Capture(bands, 10, "sample.log", "ibanez.log");
+Capture capture = new Capture(bands, 10, "sample.log", "pignose.log");
 ControlP5 p5;
 Robot robot;
 
 int curX = 500;
 int curY = 200;
-
 
 double sumOfSpectrum(){
   double s = 0;
@@ -41,8 +41,7 @@ void setup() {
   PFont font = createFont("arial", 20);
   
   // Create an Input stream which is routed into the Amplitude analyzer
-  fft = new FFT(this, bands);
-  
+  fft = new FFT(this, samplingBand);
   in = new AudioIn(this, 0);
   
   // gui
@@ -70,30 +69,19 @@ void setup() {
 
 void capture(){
   capture.log(p5.get(Textfield.class, "note").getText(), spectrum); 
-  System.out.println(p5.get(Textfield.class, "note").getText());
 }  
 
 void draw() { 
   
-  float[] _spectrum = new float[bands];
+  float[] _spectrum = new float[samplingBand];
   fft.analyze(_spectrum);
   capture.capture(_spectrum);
   
   spectrum = capture.getAverage();
   String result = capture.calc(spectrum);
-  
-  //if(result){
-    background(255);
-   
-  //}else{
-  //  background(128); 
-  //}
-  //int ty= 30;
-  //for(String s:result){
-  if(sumOfSpectrum()>-10){
+  background(255);
+  if(sumOfSpectrum()>-12){
      text(result, 400, 30);
-     //System.out.print(s);
-     //ty += 50;
      if(result.equals("E")){
        curY += 2;
      }else if(result.equals("G")){
@@ -109,8 +97,7 @@ void draw() {
          robot.mouseRelease(InputEvent.BUTTON1_MASK);
      }
   }
-  //}
-  System.out.println();
+  
   peak = capture.getPeak(spectrum);
   for(int i = 0; i < max; i++){
     float[] shown = spectrum;//(spectrumFreeze == null)?spectrum:spectrumFreeze;
@@ -121,7 +108,6 @@ void draw() {
           break;
         case 2:
           fill(0, 255, 0);
-          //ellipse(i*4-5,   height - shown[i]*height*5-5, 10, 10) ;
           break;
         case 3:
           fill(0, 0, 255);
@@ -130,24 +116,9 @@ void draw() {
           fill(0,0,0);
           break;
       }
-      
     }else{
       fill(0,0,0);
     }
     rect( i*4,  height - shown[i]*height*5, 4, shown[i]*height*5 );
   }
-  System.out.println(sumOfSpectrum());
-}
-
-void mouseClicked() {
-  //if(spectrumFreeze == null){
-  //  spectrumFreeze = Arrays.copyOf(spectrum, spectrum.length);   
-  //  peak = capture.getPeak(spectrumFreeze);
-  //  System.out.println("freeze");
-    
-  //}else{
-  //  spectrumFreeze = null;
-  //  peak = new int[0];
-  //  System.out.println("play");
-  //}
 }
